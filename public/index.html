@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rule Engine</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+</head>
+<body>
+  <h1>Rule Engine</h1>
+
+  <!-- Create Rule Form -->
+  <h2>Create a New Rule</h2>
+  <form id="create-rule-form">
+    <label for="rule-string">Rule String:</label>
+    <input type="text" id="rule-string" placeholder="e.g., age > 25 AND department = 'CSE'" required>
+    <button type="submit">Create Rule</button>
+  </form>
+  <br>
+
+  <!-- Evaluate Rule Form -->
+  <h2>Evaluate a Rule</h2>
+  <form id="evaluate-rule-form">
+    <label for="evaluate-rule-id">Rule ID:</label>
+    <input type="text" id="evaluate-rule-id" required>
+
+    <label for="evaluate-data">Evaluation Data (JSON format):</label>
+    <textarea id="evaluate-data" placeholder='e.g., {"age": 30, "department": "CSE"}' required></textarea>
+
+    <button type="submit">Evaluate Rule</button>
+  </form>
+  <br>
+
+  <!-- Combine Rules Form -->
+  <h2>Combine Multiple Rules</h2>
+  <form id="combine-rules-form">
+    <label for="combine-rule-1">Rule 1:</label>
+    <input type="text" id="combine-rule-1" placeholder="e.g., age > 25" required>
+
+    <label for="combine-rule-2">Rule 2:</label>
+    <input type="text" id="combine-rule-2" placeholder="e.g., department = 'CSE'" required>
+
+    <button type="submit">Combine Rules</button>
+  </form>
+  <br>
+
+  <!-- Update Rule Form -->
+  <h2>Update an Existing Rule</h2>
+  <form id="update-rule-form">
+    <label for="rule-id">Rule ID:</label>
+    <input type="text" id="rule-id" required>
+
+    <h4>Update Rule</h4>
+    <label for="age-operator">Age Operator:</label>
+    <input type="text" id="age-operator" placeholder="e.g., >, <, =, FUNC">
+    <label for="age-value">Age Value:</label>
+    <input type="text" id="age-value" placeholder="e.g., 25, isEven">
+
+    <button type="submit">Update Rule</button>
+  </form>
+
+  <script>
+    // Create a new rule
+    document.getElementById('create-rule-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const ruleString = document.getElementById('rule-string').value;
+
+      try {
+        const response = await axios.post('http://localhost:3000/create_rule', { rule: ruleString });
+        alert('Rule created successfully! Rule ID: ' + response.data.ruleId);
+      } catch (error) {
+        console.error('Error creating rule:', error);
+        alert('Error creating rule');
+      }
+    });
+
+    // Evaluate a rule
+    document.getElementById('evaluate-rule-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const ruleId = document.getElementById('evaluate-rule-id').value;
+      const data = JSON.parse(document.getElementById('evaluate-data').value);
+
+      try {
+        const response = await axios.post('http://localhost:3000/evaluate_rule', { ruleId, data });
+        alert('Evaluation Result: ' + response.data.isValid);
+      } catch (error) {
+        console.error('Error evaluating rule:', error);
+        alert('Error evaluating rule');
+      }
+    });
+
+    document.getElementById('combine-rules-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const rule1 = document.getElementById('combine-rule-1').value;
+      const rule2 = document.getElementById('combine-rule-2').value;
+
+      try {
+        const response = await axios.post('http://localhost:3000/combine_rules', { rules: [rule1, rule2] });
+        alert('Rules combined successfully! Combined Rule ID: ' + response.data.ruleId);
+      } catch (error) {
+        console.error('Error combining rules:', error);
+        alert('Error combining rules');
+      }
+    });
+
+    document.getElementById('update-rule-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const ruleId = document.getElementById('rule-id').value;
+      const ageOperator = document.getElementById('age-operator').value;
+      const ageValue = document.getElementById('age-value').value;
+
+      const updates = { age: { operator: ageOperator, value: ageValue } };
+      try {
+        const response = await axios.post('http://localhost:3000/update_rule', { ruleId, updates });
+        alert('Rule updated successfully!');
+      } catch (error) {
+        console.error('Error updating rule:', error);
+        alert('Error updating rule');
+      }
+    });
+  </script>
+</body>
+</html>
